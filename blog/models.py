@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 
 # Create your models here.
 
@@ -34,13 +34,20 @@ class Post(BaseModel):
     content      = models.TextField()
     author       = models.CharField(max_length=255)
     image        = models.ImageField(upload_to='posts/')
-    views        = models.IntegerField(default=0)
+    views        = models.IntegerField(default=0, editable=False)
 
-    published_at = models.DateTimeField()
+    published_at = models.DateTimeField(blank=True, null=True, editable=False)
     is_published = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+
+        if self.is_published and self.published_at is None:
+            self.published_at = timezone.now()
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
